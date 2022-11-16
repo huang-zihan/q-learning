@@ -6,9 +6,12 @@ from PIL import ImageTk, Image
 np.random.seed(1)
 PhotoImage = ImageTk.PhotoImage
 UNIT = 100
-HEIGHT = 5
-WIDTH = 5
+HEIGHT = 6 # 图像里的纵向
+WIDTH = 8 # 图像里的横向
 
+
+def cac_coordinate(cell_num):
+    return int(UNIT*(cell_num-1/2))
 
 class Env(tk.Tk):
     def __init__(self):
@@ -16,7 +19,7 @@ class Env(tk.Tk):
         self.action_space = ['u', 'd', 'l', 'r']
         self.n_actions = len(self.action_space)
         self.title('Q Learning')
-        self.geometry('{0}x{1}'.format(HEIGHT * UNIT, HEIGHT * UNIT))
+        self.geometry('{0}x{1}'.format(WIDTH * UNIT, HEIGHT * UNIT))
         self.shapes = self.load_images()
         self.canvas = self._build_canvas()
         self.texts = []
@@ -30,14 +33,20 @@ class Env(tk.Tk):
             x0, y0, x1, y1 = c, 0, c, HEIGHT * UNIT
             canvas.create_line(x0, y0, x1, y1)
         for r in range(0, HEIGHT * UNIT, UNIT):  # 0~400 by 80
-            x0, y0, x1, y1 = 0, r, HEIGHT * UNIT, r
+            x0, y0, x1, y1 = 0, r, WIDTH * UNIT, r
             canvas.create_line(x0, y0, x1, y1)
 
         # add img to canvas
-        self.rectangle = canvas.create_image(50, 50, image=self.shapes[0])
-        self.triangle1 = canvas.create_image(250, 150, image=self.shapes[1])
-        self.triangle2 = canvas.create_image(150, 250, image=self.shapes[1])
-        self.circle = canvas.create_image(250, 250, image=self.shapes[2])
+        self.rectangle = canvas.create_image(cac_coordinate(1), cac_coordinate(1), image=self.shapes[0])
+        
+        self.triangle1 = canvas.create_image(cac_coordinate(2), cac_coordinate(1), image=self.shapes[1])
+        self.triangle2 = canvas.create_image(cac_coordinate(3), cac_coordinate(1), image=self.shapes[1])
+        self.triangle3 = canvas.create_image(cac_coordinate(4), cac_coordinate(1), image=self.shapes[1])
+        self.triangle4 = canvas.create_image(cac_coordinate(5), cac_coordinate(1), image=self.shapes[1])
+        self.triangle5 = canvas.create_image(cac_coordinate(6), cac_coordinate(1), image=self.shapes[1])
+        self.triangle6 = canvas.create_image(cac_coordinate(7), cac_coordinate(1), image=self.shapes[1])
+
+        self.circle = canvas.create_image(cac_coordinate(8), cac_coordinate(1), image=self.shapes[2])
 
         # pack all
         canvas.pack()
@@ -78,10 +87,10 @@ class Env(tk.Tk):
         for i in range(HEIGHT):
             for j in range(WIDTH):
                 for action in range(0, 4):
-                    state = [i, j]
+                    state = [j, i]
                     if str(state) in q_table.keys():
                         temp = q_table[str(state)][action]
-                        self.text_value(j, i, round(temp, 2), action)
+                        self.text_value(i, j, round(temp, 2), action)
 
     def coords_to_state(self, coords):
         x = int((coords[0] - 50) / 100)
@@ -129,7 +138,11 @@ class Env(tk.Tk):
             reward = 100
             done = True
         elif next_state in [self.canvas.coords(self.triangle1),
-                            self.canvas.coords(self.triangle2)]:
+                            self.canvas.coords(self.triangle2),
+                            self.canvas.coords(self.triangle3),
+                            self.canvas.coords(self.triangle4),
+                            self.canvas.coords(self.triangle5),
+                            self.canvas.coords(self.triangle6)]:
             reward = -100
             done = True
         else:
@@ -143,3 +156,4 @@ class Env(tk.Tk):
     def render(self):
         time.sleep(0.03)
         self.update()
+

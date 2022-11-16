@@ -1,8 +1,9 @@
 import numpy as np
 import random
-from environment import Env
+# from environment import Env
+from environmentclip import Env
 from collections import defaultdict
-
+import dill
 
 class QLearningAgent:
     def __init__(self, actions):
@@ -31,6 +32,12 @@ class QLearningAgent:
             action = self.arg_max(state_action)
         return action
 
+    def save_model(self, filename):
+        dill.dump(self.q_table, open(filename, 'wb'))
+
+    def load_model(self, filename):
+        self.q_table = dill.load(open(filename,"rb"))
+
     @staticmethod
     def arg_max(state_action):
         max_index_list = []
@@ -48,7 +55,10 @@ class QLearningAgent:
 if __name__ == "__main__":
     env = Env()
     agent = QLearningAgent(actions=list(range(env.n_actions)))
-    for episode in range(1000):
+    
+    # agent.load_model('qlearning.ckpt')
+    
+    for episode in range(460):
         state = env.reset()
         while True:
             env.render()
@@ -61,4 +71,6 @@ if __name__ == "__main__":
             env.print_value_all(agent.q_table)
             # 当到达终点就终止游戏开始新一轮训练
             if done:
+                if (episode+1) % 50 == 0:
+                    agent.save_model(f"qlearning{episode}.ckpt")
                 break
